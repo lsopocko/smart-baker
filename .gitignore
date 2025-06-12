@@ -1,0 +1,10 @@
+/node_modules
+/dist
+/build
+/coverage
+/logs
+/tmp
+/public
+/public/uploads
+/public/uploads/images
+/public/uploads/images/thumbnails
