@@ -1,8 +1,8 @@
-type VolumeUnit = "cup" | "cups" | "tbsp" | "tsp" | "fl oz" | "teaspoons" | "tablespoons";
-type WeightUnit = "oz" | "lb";
-type Unit = VolumeUnit | WeightUnit;
+export type VolumeUnit = "cup" | "cups" | "tbsp" | "tsp" | "fl oz" | "teaspoon" | "teaspoons" | "tablespoon" | "tablespoons";
+export type WeightUnit = "oz" | "lb";
+export type Unit = VolumeUnit | WeightUnit;
 
-type ConversionResult = {
+export type ConversionResult = {
   unit: "ml" | "g";
   value: number;
   ingredient?: string;
@@ -12,7 +12,9 @@ const VOLUME_CONVERSIONS_TO_ML: Record<VolumeUnit, number> = {
   cup: 240,
   cups: 240,
   teaspoons: 4.93,
+  teaspoon: 4.93,
   tablespoons: 14.8,
+  tablespoon: 14.8,
   tbsp: 14.8,
   tsp: 4.93,
   "fl oz": 29.57
@@ -67,17 +69,18 @@ export function convertToMetric(
       return {
         value: Math.round(ml * gramsPerMl),
         unit: "g",
-        ingredient: normalized
+        ingredient: ingredient
       };
     }
 
-    return { value: Math.round(ml), unit: "ml" };
+    return { value: Math.round(ml), unit: "ml", ingredient };
   }
 
   if (unit in WEIGHT_CONVERSIONS_TO_G) {
     return {
       value: Math.round(amount * WEIGHT_CONVERSIONS_TO_G[unit as WeightUnit]),
-      unit: "g"
+      unit: "g",
+      ingredient
     };
   }
 

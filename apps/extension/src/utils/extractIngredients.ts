@@ -43,8 +43,6 @@ const UNITS = [
   
     const sorted = [...lines].sort((a, b) => a.index - b.index);
     const result: ScoredLine[] = [sorted[0]];
-
-    console.log('sorted', sorted)
   
     for (let i = 1; i < sorted.length; i++) {
       const prev = sorted[i - 1];

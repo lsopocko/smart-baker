@@ -1,7 +1,9 @@
+import type { Unit } from "./convert";
+
 type ParsedIngredient = {
     input: string;
     quantity: number | null;
-    unit: string | null;
+    unit: Unit | null;
     ingredient: string | null;
     comment: string | null;
   };
