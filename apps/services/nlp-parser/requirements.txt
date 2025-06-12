@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+ingredient-parser-nlp
+pydantic
+typing

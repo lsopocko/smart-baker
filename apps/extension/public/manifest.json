@@ -1,0 +1,22 @@
+{
+    "manifest_version": 3,
+    "name": "Smart Baker",
+    "version": "0.1",
+    "description": "Convert baking/cooking units and pan sizes directly on recipe websites.",
+    "action": {
+      "default_popup": "index.html",
+      "default_icon": "icon-48.png"
+    },
+    "permissions": ["scripting", "storage", "activeTab"],
+    "host_permissions": ["<all_urls>"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"],
+        "run_at": "document_idle"
+      }
+    ]
+  }

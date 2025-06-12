@@ -1,0 +1,16 @@
+{
+    "name": "smart-baker",
+    "private": true,
+    "workspaces": [
+      "apps/*",
+      "packages/*"
+    ],
+    "scripts": {
+      "dev:web": "pnpm --filter web... dev",
+      "dev:extension": "pnpm --filter extension... dev"
+    },
+    "devDependencies": {
+      "tailwindcss": "^3",
+      "eslint": "^8"
+    }
+  }

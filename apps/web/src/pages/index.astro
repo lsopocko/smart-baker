@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PaceCalculator from '../components/PaceCalculator/PaceCalculator';
+---
+
+<Layout
+    title="Race Pace Calculator – Plan Your Running Splits | running.lsopocko.com"
+    description="Calculate your race pace with our free running pace calculator. Customize your race distance, finish time, and pacing strategy to get personalized split times. Perfect for runners training for 5K, 10K, half marathon, or marathon."
+    keywords="race pace calculator, running pace calculator, split time calculator, marathon pace calculator, half marathon pace chart, run planner, negative split calculator, 10k pace chart, run pacing tool, pace calculator app"
+>
+    <div class="mb-10">
+        <h1 class="mb-4">Race Pace Calculator</h1>
+        <p>
+            Plan your ideal race strategy. Enter your distance, goal time, and pacing preference to get personalized split times — whether you're running a 5K,
+            10K, half marathon, or a full 42.195 km. Perfect for runners looking to optimize performance.
+        </p>
+    </div>
+    <div class="flex w-full flex-col items-center justify-between lg:flex-row gap-8">
+        <PaceCalculator client:idle />
+    </div>
+</Layout>

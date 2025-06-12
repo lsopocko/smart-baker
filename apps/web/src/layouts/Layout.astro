@@ -1,0 +1,71 @@
+---
+import '../../src/styles/globals.css';
+import '@fontsource-variable/inter/wght.css';
+import interWoff2 from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+    title: string;
+    description?: string;
+    keywords?: string;
+}
+
+const { title, keywords, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>{title}</title>
+        <meta name="title" content={title} />
+        <meta name="description" content={description} />
+        <meta name="keywords" content={keywords} />
+        <meta name="author" content="lsopocko.com" />
+        <meta name="theme-color" content="#3d3d3d" />
+        <meta name="color-scheme" content="light dark" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="robots" content="index, follow" />
+        <meta name="google-site-verification" content="UeH8gO8_3V6NhbrcS6WQOmyEjhEQ4ns3Dof4MUa0Vpk" />
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://tools.getfasterapp.com/" />
+        <meta property="og:title" content="Race Pace Calculator – Plan Your Running Splits | tools.getfasterapp.com" />
+        <meta
+            property="og:description"
+            content="Calculate your race pace with our free running pace calculator. Customize your race distance, finish time, and pacing strategy to get personalized split times."
+        />
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://tools.getfasterapp.com/" />
+        <meta property="twitter:title" content="Race Pace Calculator – Plan Your Running Splits | tools.getfasterapp.com" />
+        <meta property="twitter:description" content="Free tool for runners to plan their race paces and split strategies." />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="preload" as="font" type="font/woff2" href={interWoff2} crossorigin />
+    </head>
+    <body class="antialiased bg-base-100 text-base-content">
+        <div class="flex flex-col min-h-screen">
+            <div class="flex w-full mx-auto grow items-center">
+                <main class="grow px-4 md:px-6 lg:px-12 py-6 sm:py-12 max-w-5xl mx-auto"><slot /></main>
+            </div>
+            <Footer />
+        </div>
+    </body>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Race Pace Calculator",
+            "url": "https://tools.getfasterapp.com/",
+            "applicationCategory": "Sports",
+            "operatingSystem": "All",
+            "browserRequirements": "Requires JavaScript",
+            "description": "Free online race pace calculator for runners. Enter your race distance, desired finish time, and pacing strategy to get split times.",
+            "keywords": ["race pace calculator", "running calculator", "marathon pace", "split calculator", "running splits"]
+        }
+    </script>
+</html>
