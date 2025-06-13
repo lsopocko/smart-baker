@@ -1,4 +1,4 @@
-export type VolumeUnit = "cup" | "cups" | "tbsp" | "tsp" | "fl oz" | "teaspoon" | "teaspoons" | "tablespoon" | "tablespoons";
+export type VolumeUnit = "cup" | "cups" | "tbsp" | "tsp" | "fl oz" | "teaspoon" | "teaspoons" | "tablespoon" | "tablespoons" | "pound" | "pounds" | "lb" | "lbs";
 export type WeightUnit = "oz" | "lb";
 export type Unit = VolumeUnit | WeightUnit;
 
@@ -17,6 +17,10 @@ const VOLUME_CONVERSIONS_TO_ML: Record<VolumeUnit, number> = {
   tablespoon: 14.8,
   tbsp: 14.8,
   tsp: 4.93,
+  pound: 453.6,
+  pounds: 453.6,
+  lb: 453.6,
+  lbs: 453.6,
   "fl oz": 29.57
 };
 

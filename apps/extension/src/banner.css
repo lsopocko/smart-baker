@@ -1,0 +1,283 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+.sb-banner {
+    position: fixed;
+    top: 48px;
+    right: 24px;
+    z-index: 999999;
+
+    background-color: #fff0d3; /* cupcake cream (base-100) */
+    color: #3d2c29; /* chocolate text */
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+    font-family: 'Segoe UI', sans-serif;
+    width: 280px;
+
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: center;
+    animation: slide-in 0.2s ease-in-out forwards;
+}
+
+@keyframes slide-in {
+    from {
+        transform: translateY(80px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.sb-banner h2 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ec6b1a; /* primary orange */
+    margin: 0;
+}
+
+.sb-banner ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+    counter-reset: ingredient;
+}
+
+.sb-banner li {
+    font-weight: 500;
+    counter-increment: ingredient;
+    color: #3d2c29;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.sb-banner .close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: #3d2c29;
+    font-size: 16px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sb-banner .logo {
+    width: 57.5px;
+    height: 89.5px;
+    align-self: center;
+    margin-top: -48px;
+}
+
+.sb-banner .show-recipe-btn {
+    background: #3d2c29;
+    color: #fcf1d5;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 180px;
+    padding: 8px 16px;
+    align-self: center;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 4px;
+    position: relative;
+    padding-right: 32px;
+}
+
+.sb-banner .show-recipe-btn:hover {
+    background-color: #5b4845;
+    color: #fcf1d5;
+}
+
+.sb-banner .show-recipe-btn .dropdown-arrow {
+    background: #3d2c29;
+    font-size: 12px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sb-banner .dropdown-arrow-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.sb-banner .show-recipe-btn .dropdown-arrow:hover {
+    background-color: #513b37;
+}
+
+.sb-banner .show-recipe-btn .dropdown-content {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+    background: #3d2c29;
+    color: #fcf1d5;
+    display: none;
+    flex-direction: column;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 180px;
+    z-index: 1000;
+}
+
+.sb-banner .show-recipe-btn .dropdown-content.is-visible {
+    display: flex;
+}
+
+.sb-banner .show-recipe-btn .dropdown-content .dropdown-item {
+    font-size: 12px;
+    font-weight: 500;
+    color: #fcf1d5;
+    padding: 8px;
+}
+
+.sb-banner .show-recipe-btn .dropdown-content .dropdown-item:first-child {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.sb-banner .show-recipe-btn .dropdown-content .dropdown-item:last-child {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.sb-banner .show-recipe-btn .dropdown-content .dropdown-item:hover {
+    background-color: #513b37;
+}
+
+.sb-banner .show-recipe-btn .dropdown-arrow svg {
+    width: 16px;
+    height: 16px;
+}
+
+.sb-banner .copy-all-btn {
+    border: 2px solid #3d2c29;
+    color: #3d2c29;
+    background: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 16px;
+    align-self: center;
+}
+
+.sb-banner .copy-all-btn:hover {
+    background-color: #3d2c29;
+    color: #fcf1d5;
+}
+
+.sb-banner .converted-ingredients {
+    display: none;
+    gap: 12px;
+    flex-direction: column;
+    flex-grow: 1;
+    position: relative;
+}
+
+.sb-banner .converted-ingredients .converted-ingredients-scroll {
+    overflow-y: scroll;
+    padding-right: 16px;
+    max-height: 200px;
+    margin-right: -12px;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+}
+
+.sb-banner .converted-ingredients .converted-value {
+    font-size: 11px;
+    font-weight: normal;
+    border-radius: 8px;
+    border: 2px solid #3d2c29;
+    padding: 4px 8px;
+    margin-left: 8px;
+    white-space: nowrap;
+    animation: scale-in 0.2s ease-in-out forwards;
+    animation-delay: calc(var(--i) * 30ms);
+}
+
+@keyframes scale-in {
+    0% {
+        background-color: #5dab3e;
+        transform: scale(1.1);
+    }
+    100% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+}
+
+.sb-banner .converted-ingredients.is-visible {
+    display: flex;
+}
+
+.sb-banner .bg {
+    position: absolute;
+    top: calc(50% - 37px);
+    left: calc(50% - 63px);
+    width: 126px;
+    height: 74px;
+}
+
+.sb-banner .convert-for {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    flex-direction: row;
+}
+
+.sb-banner .ingredient-name {
+    text-transform: capitalize;
+    font-weight: 500;
+}
+.sb-banner .converted-ingredients-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}

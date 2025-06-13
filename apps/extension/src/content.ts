@@ -1,11 +1,105 @@
 import { extractIngredientLinesFromPage } from "./utils/extractIngredients"
 import { parseIngredientsFromAPI } from "./utils/parseIngredientsFromAPI";
 import { convertToMetric, type ConversionResult } from "./utils/convert";
+import css from './banner.css?inline';
+
+function html(strings: TemplateStringsArray, ...values: any[]): string {
+  return strings.reduce((result, str, i) => result + str + (values[i] ?? ''), '');
+}
 
 type ConvertedIngredient = {
-  original: string;
+  input: string;
+  original: {
+    quantity: number | null;
+    unit: string | null;
+    ingredient: string | null;
+  };
   converted: ConversionResult | null;
 }[];
+
+function scaleIngredientsByRatio(
+  ingredients: ConvertedIngredient,
+  ratio: number
+): ConvertedIngredient {
+  return ingredients.map((ing) => ({
+    ...ing,
+    converted: ing.converted ? {
+      ...ing.converted,
+      value: ing.converted.value ? Math.round(ing.converted.value * ratio * 10) / 10 : 0,
+    } : null,
+  }));
+}
+
+function convertToCm(value: number, unit: "cm" | "inch"): number {
+  return unit === "inch" ? value * 2.54 : value;
+}
+
+type PanSize = {
+  width: number;
+  height: number;
+  area?: number;
+  unit: "cm" | "inch";
+  name: string;
+};
+
+function calculatePanScalingRatio(from: PanSize, to: PanSize): number {
+  const fromWidth = convertToCm(from.width, from.unit);
+  const fromHeight = convertToCm(from.height, from.unit);
+  const toWidth = convertToCm(to.width, to.unit);
+  const toHeight = convertToCm(to.height, to.unit);
+
+  const fromArea = fromWidth * fromHeight;
+  const toArea = toWidth * toHeight;
+
+  return toArea / fromArea;
+}
+
+const detectedPanSize: PanSize = {
+  width: 8,
+  height: 11,
+  area: 8 * 11,
+  unit: "inch",
+  name: "22×33 cm pan",
+}
+
+
+const userPanSizes: PanSize[] = [
+  {
+    width: 18,
+    height: 18,
+    area: 18 * 18,
+    unit: "cm",
+    name: "18×18 cm sheet pan",
+  },
+  {
+    width: 24,
+    height: 24,
+    area: 24 * 24,
+    unit: "cm",
+    name: "24×24 cm pan",
+  },
+  {
+    name: "Ø 24 cm cake pan",
+    width: 24,
+    height: 24,
+    unit: "cm",
+    area: Math.PI * 12 * 12,
+  },
+  {
+    name: "Ø 28 cm cake pan",
+    width: 28,
+    height: 28,
+    unit: "cm",
+    area: Math.PI * 14 * 14,
+  },
+  {
+    name: "Ø 20 cm cake pan",
+    width: 20,
+    height: 20,
+    unit: "cm",
+    area: Math.PI * 10 * 10,
+  },
+];
 
 async function runSmartParsing() {
   const scored = extractIngredientLinesFromPage();
@@ -18,12 +112,22 @@ async function runSmartParsing() {
   const converted: ConvertedIngredient = parsed.map((p) => {
     if (p.quantity && p.unit && p.ingredient) {
       return {
-        original: p.input,
+        input: p.input,
+        original: {
+          quantity: p.quantity,
+          unit: p.unit,
+          ingredient: p.ingredient,
+        },
         converted: convertToMetric(p.quantity, p.unit, p.ingredient),
       };
     }
     return {
-      original: p.input,
+      input: p.input,
+      original: {
+        quantity: null,
+        unit: null,
+        ingredient: null,
+      },
       converted: null,
     };
   });
@@ -36,184 +140,157 @@ async function runSmartParsing() {
   return converted;
 }
 
-function injectBanner(converted: ConvertedIngredient) {
+function injectBanner(state: BakeIQModule) {
   if (document.getElementById("smart-baker-popup")) return;
 
   const container = document.createElement("div");
   container.id = "smart-baker-popup";
-  container.style.position = "fixed";
-  container.style.bottom = "16px";
-  container.style.right = "16px";
-  container.style.zIndex = "999999";
 
   const shadow = container.attachShadow({ mode: "open" });
 
   // Minimal CSS Reset + Custom Style
   const style = document.createElement("style");
-  style.textContent = `
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-    html, body {
-      margin: 0;
-      padding: 0;
-    }
-      .sb-banner {
-  position: fixed;
-  top: 24px;
-  right: 24px;
-  z-index: 999999;
-
-  background-color: #FFF0D3; /* cupcake cream (base-100) */
-  color: #3d2c29;            /* chocolate text */
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-
-  font-family: 'Segoe UI', sans-serif;
-  min-width: 280px;
-  max-width: 400px;
-
-  padding: 16px;
-  font-size: 14px;
-  line-height: 1.5;
-
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  justify-content: center;
-  align-items: center;
-}
-
-.sb-banner h2 {
-  font-size: 16px;
-  font-weight: bold;
-  color: #ec6b1a; /* primary orange */
-  margin: 0;
-}
-
-.sb-banner ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  justify-content: center;
-  align-items: center;
-}
-
-.sb-banner li {
-  background: #ffe5b4; /* light warm accent */
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-weight: 500;
-  color: #3d2c29;
-  box-shadow: inset 0 1px 0 #ffffff44;
-  margin-bottom: 4px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sb-banner .close-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  color: #3d2c29;
-  font-size: 16px;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sb-banner .logo {
-  width: 128px;
-  height: 128px;
-  margin-bottom: 8px;
-}
-
-.sb-banner .show-recipe-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  color: #3d2c29;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-bottom: 8px;
-}
-
-.sb-banner .converted-ingredients {
-  display: none;
-  max-height: 200px;
-  overflow-y: scroll;
-  padding-right: 16px;
-}
-
-.sb-banner .converted-ingredients .converted-value {
-  font-size: 16px;
-  color: #3d2c29;
-  font-weight: normal;
-  border-radius: 8px;
-  background-color: #3d2c29;
-  color: #FFF0D3;
-  padding: 4px 8px;
-  position: relative;
-  top: -2px;
-  bottom: -2px;
-  margin-left: 8px;
-}
-
-.sb-banner .converted-ingredients.is-visible {
-  display: block;
-}
-  `;
+  style.textContent = `${css}`;
   shadow.appendChild(style);
 
   const wrapper = document.createElement("div");
   wrapper.className = "sb-banner";
-  const imageUrl = chrome.runtime.getURL("images/logo.png");
 
-  console.log('imageUrl', imageUrl);
+  const imageUrl = chrome.runtime.getURL("images/logo-2.png");
+  const closeIcon = chrome.runtime.getURL("images/close.svg");
+  const downArrowIcon = chrome.runtime.getURL("images/down-arrow.svg");
 
-  wrapper.innerHTML = `
-  <button class="close-btn">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-      <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-    </svg>
-  </button>
-    <img src="${imageUrl}" alt="Smart Baker"  class="logo"/>
-    <button class="show-recipe-btn">Show converted ingredients</button>
+  wrapper.innerHTML = html`
+    <button class="close-btn">
+      <img src="${closeIcon}" alt="Close" />
+    </button>
+    <img src="${imageUrl}" alt="Smart Baker"  class="logo" />
+    <div class="convert-for">
+      <div class="show-recipe-btn">
+        <span id="pan-name">22×33 cm pan</span>
+        <span class="dropdown-arrow">
+          <img src="${downArrowIcon}" alt="Down Arrow" class="dropdown-arrow-icon" />
+        </span>
+        <div class="dropdown-content" id="pan-dropdown">
+          ${userPanSizes.map((pan) => `<span class="dropdown-item" value="${pan.area}">${pan.name}</span>`).join("")}
+        </div>
+      </div>
+    </div>
     <div class="converted-ingredients">
-      <ul>
-        ${converted.map((c) => `<li>${c.original} <span class="converted-value">${c.converted?.value} ${c.converted?.unit}</span></li>`).join("")}
-      </ul>
+      <img src="${chrome.runtime.getURL("images/bg.png")}" alt="Smart Baker"  class="bg"/>
+      <div class="converted-ingredients-scroll">
+        <ul>
+          ${state.getState().convertedIngredients.filter((c) => c.original?.ingredient).map((c) => `<li><span class="ingredient-name">${c.original.ingredient}</span> <span class="converted-value">${c.converted?.value} ${c.converted?.unit}</span></li>`).join("")}
+        </ul>
+      </div>
+      <div class="converted-ingredients-footer">
+        <button class="copy-all-btn" id="send-to-app">Send to App</button>
+        <button class="copy-all-btn" id="copy-all">Copy all</button>
+      </div>
     </div>
   `;
 
-  wrapper.querySelector(".show-recipe-btn")?.addEventListener("click", () => {
-    wrapper.querySelector(".converted-ingredients")?.classList.add("is-visible"); 
+  wrapper.querySelector(".show-recipe-btn .dropdown-arrow")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    wrapper.querySelector("#pan-dropdown")?.classList.toggle("is-visible"); 
+  });
+
+  wrapper.querySelector(".show-recipe-btn")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    wrapper.querySelector(".converted-ingredients")?.classList.toggle("is-visible");
+  });
+
+  wrapper.querySelectorAll(".dropdown-item")?.forEach((item) => {
+    item.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const value = item.getAttribute("value");
+      if (value) {
+        const ratio = calculatePanScalingRatio(detectedPanSize, userPanSizes.find((pan) => pan.area === Number(value))!);
+        const scaledIngredients = scaleIngredientsByRatio(state.getState().convertedIngredients, ratio);
+        state.setState({
+          scaleRatio: ratio,
+          convertedIngredients: scaledIngredients,
+        });
+        const convertedIngredients = wrapper.querySelector(".converted-ingredients ul");
+        if(convertedIngredients?.innerHTML) {
+          convertedIngredients.innerHTML = scaledIngredients.filter((c) => c.original?.ingredient).map((c, index) => `<li style="--i: ${index}"><span class="ingredient-name">${c.original.ingredient}</span> <span class="converted-value">${c.converted?.value} ${c.converted?.unit}</span></li>`).join("");
+          wrapper.querySelector(".converted-ingredients")?.classList.add("is-visible");
+          wrapper.querySelector("#pan-dropdown")?.classList.remove("is-visible"); 
+          const panNameEl = wrapper.querySelector("#pan-name");
+          if (panNameEl) {
+            panNameEl.textContent = userPanSizes.find((pan) => pan.area === Number(value))?.name || "22×33 cm pan";
+          }
+        }
+      }
+    });
   });
 
   wrapper.querySelector(".close-btn")?.addEventListener("click", () => {
     container.remove();
   });
 
+  wrapper.querySelector("#copy-all")?.addEventListener("click", () => {
+    const ingredients = state.getState().convertedIngredients.filter((c) => c.converted?.ingredient).map((c) => `${c.original.quantity} ${c.original.unit} ${c.original.ingredient} → ${c.converted?.value} ${c.converted?.unit}`).join("\n");
+    navigator.clipboard.writeText(ingredients);
+  });
+
   shadow.appendChild(wrapper);
   document.body.appendChild(container);
 }
 
-const init = async() => {
-  const converted = await runSmartParsing();
-  injectBanner(converted);
+interface BakeIQModule {
+  getState: () => BakeIQState;
+  setState: (partial: Partial<BakeIQState>) => void;
 }
 
-init();
+const init = async(state: BakeIQModule) => {
+
+  const converted = await runSmartParsing();
+
+  state.setState({
+    detectedPan: detectedPanSize,
+    activePan: userPanSizes[0],
+    userSettings: {},
+    scaleRatio: 1,
+    convertedIngredients: converted,
+  });
+
+  injectBanner(state);
+}
+
+type BakeIQState = {
+  detectedPan: PanSize | null;
+  activePan: PanSize | null;
+  userSettings: Record<string, any>; 
+  convertedIngredients: ConvertedIngredient;
+  scaleRatio: number;
+};
+
+setTimeout(() => {
+  const BakeIQ: BakeIQModule = (() => {
+    let state: BakeIQState = {
+      detectedPan: null,
+      activePan: null,
+      userSettings: {},
+      convertedIngredients: [],
+      scaleRatio: 1,
+    };
+  
+    function setState(partial: Partial<BakeIQState>): void {
+      state = { ...state, ...partial };
+    }
+  
+    function getState(): BakeIQState {
+      return state;
+    }
+  
+    return {
+      getState,
+      setState,
+    };
+  })();
+
+  (async (state) => {
+    await init(state);
+  })(BakeIQ);
+}, 1000);
