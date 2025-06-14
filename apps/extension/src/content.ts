@@ -2,6 +2,7 @@ import { extractIngredientLinesFromPage } from './utils/extractIngredients';
 import { parseIngredientsFromAPI } from './utils/parseIngredientsFromAPI';
 import { convertToMetric, type ConversionResult } from './utils/convert';
 import css from './banner.css?inline';
+import { shouldShowBanner } from './utils/shouldShowBanner';
 
 function html(strings: TemplateStringsArray, ...values: any[]): string {
     return strings.reduce((result, str, i) => result + str + (values[i] ?? ''), '');
@@ -101,6 +102,8 @@ const userPanSizes: PanSize[] = [
 
 async function runSmartParsing() {
     const scored = extractIngredientLinesFromPage();
+
+    console.log('scored', scored);
 
     if (scored.length === 0) {
         return [];
@@ -262,7 +265,9 @@ interface BakeIQModule {
 }
 
 const init = async (state: BakeIQModule) => {
-    // return;
+    if (!shouldShowBanner()) {
+        return;
+    }
 
     const converted = await runSmartParsing();
 
@@ -273,6 +278,11 @@ const init = async (state: BakeIQModule) => {
         scaleRatio: 1,
         convertedIngredients: converted
     });
+
+    if (converted.length === 0) {
+        console.log('No converted ingredients');
+        return;
+    }
 
     injectBanner(state);
 };
@@ -285,7 +295,7 @@ type BakeIQState = {
     scaleRatio: number;
 };
 
-setTimeout(() => {
+(() => {
     const BakeIQ: BakeIQModule = (() => {
         let state: BakeIQState = {
             detectedPan: null,
@@ -312,4 +322,4 @@ setTimeout(() => {
     (async (state) => {
         await init(state);
     })(BakeIQ);
-}, 1000);
+})();
