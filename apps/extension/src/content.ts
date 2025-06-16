@@ -3,6 +3,8 @@ import { parseIngredientsFromAPI } from './utils/parseIngredientsFromAPI';
 import { convertToMetric, type ConversionResult } from './utils/convert';
 import css from './banner.css?inline';
 import { shouldShowBanner } from './utils/shouldShowBanner';
+import { detectLanguage } from './utils/detectLanguage';
+import { detectUnitSystem } from './utils/detectUnitSystem';
 
 function html(strings: TemplateStringsArray, ...values: any[]): string {
     return strings.reduce((result, str, i) => result + str + (values[i] ?? ''), '');
@@ -265,7 +267,11 @@ interface BakeIQModule {
 }
 
 const init = async (state: BakeIQModule) => {
-    if (!shouldShowBanner()) {
+    const language = detectLanguage();
+    const unitSystem = detectUnitSystem(document.body.innerText);
+
+    if (!shouldShowBanner(language, unitSystem)) {
+        console.log('Banner should not be shown');
         return;
     }
 
@@ -276,8 +282,12 @@ const init = async (state: BakeIQModule) => {
         activePan: userPanSizes[0],
         userSettings: {},
         scaleRatio: 1,
-        convertedIngredients: converted
+        convertedIngredients: converted,
+        siteUnitSystem: unitSystem,
+        siteLanguage: language
     });
+
+    console.log('state', state.getState());
 
     if (converted.length === 0) {
         console.log('No converted ingredients');
@@ -293,6 +303,8 @@ type BakeIQState = {
     userSettings: Record<string, any>;
     convertedIngredients: ConvertedIngredient;
     scaleRatio: number;
+    siteUnitSystem: 'metric' | 'imperial' | 'mixed';
+    siteLanguage: string;
 };
 
 (() => {
@@ -302,7 +314,9 @@ type BakeIQState = {
             activePan: null,
             userSettings: {},
             convertedIngredients: [],
-            scaleRatio: 1
+            scaleRatio: 1,
+            siteUnitSystem: 'metric',
+            siteLanguage: 'en'
         };
 
         function setState(partial: Partial<BakeIQState>): void {
