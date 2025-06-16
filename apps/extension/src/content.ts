@@ -172,6 +172,7 @@ function injectBanner(state: BakeIQModule) {
         </button>
         <img src="${imageUrl}" alt="Smart Baker" class="logo" />
         <div class="convert-for">
+            <span class="convert-for-label">Convert for:</span>
             <div class="show-recipe-btn">
                 <span id="pan-name">22×33 cm pan</span>
                 <span class="dropdown-arrow">
