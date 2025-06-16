@@ -4,9 +4,16 @@ from typing import List
 from ingredient_parser import parse_ingredient
 from fastapi.middleware.cors import CORSMiddleware
 import re
+import uuid
 
 UNITS = ["cup", "cups", "tbsp", "tablespoon", "tsp", "teaspoon", "oz", "ounce", "lb", "pound", "ml", "l", "g", "kg"]
 FOODS = ["flour", "sugar", "butter", "milk", "egg", "cheese", "salt", "oil", "chicken", "garlic", "onion"]
+
+# Store parsed ingredients keyed by UUID
+ingredient_db = {}
+
+class IngredientLines(BaseModel):
+    lines: list[str]
 
 def is_probable_ingredient(line: str) -> bool:
     if not re.search(r"\d", line): return False  # must have a number
@@ -34,6 +41,7 @@ class RecipeText(BaseModel):
 
 class IngredientLines(BaseModel):
     lines: List[str]
+    name: str
 
 @app.post("/parse")
 def parse_lines(data: IngredientLines):
@@ -55,7 +63,19 @@ def parse_lines(data: IngredientLines):
             "comment": comment
         })
 
-    return results
+    parsed_id = str(uuid.uuid4())
+    ingredient_db[parsed_id] = {
+        "name": data.name,
+        "results": results
+    }
+
+    return { "id": parsed_id, "results": results }
+
+@app.get("/ingredients/{parsed_id}")
+def get_ingredients(parsed_id: str):
+    if parsed_id in ingredient_db:
+        return ingredient_db[parsed_id]
+    return {"error": "Not found"}, 404
 
 @app.post("/extract-ingredients")
 def extract_ingredients(data: RecipeText):

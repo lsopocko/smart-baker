@@ -1,0 +1,88 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { convertToMetric } from '@bakeiq/converter';
+
+export const prerender = false; 
+
+export type ConversionResult = {
+    unit: 'ml' | 'g';
+    value: number;
+    ingredient?: string;
+};
+
+type ConvertedIngredient = {
+    input: string;
+    original: {
+        quantity: number | null;
+        unit: string | null;
+        ingredient: string | null;
+    };
+    converted: ConversionResult | null;
+}[];
+
+const { id } = Astro.params;
+
+const response = await fetch(`http://localhost:8001/ingredients/${id}`);
+
+if (!response.ok) {
+  throw new Error('Failed to fetch recipe data');
+}
+
+const data = await response.json();
+
+console.log(data);
+
+const converted: ConvertedIngredient = data.results.map((p: any) => {
+        if (p.quantity && p.unit && p.ingredient) {
+            return {
+                input: p.input,
+                original: {
+                    quantity: p.quantity,
+                    unit: p.unit,
+                    ingredient: p.ingredient
+                },
+                converted: convertToMetric(p.quantity, p.unit, p.ingredient)
+            };
+        }
+        return {
+            input: p.input,
+            original: {
+                quantity: null,
+                unit: null,
+                ingredient: null
+            },
+            converted: null
+        };
+    }).filter((c) => c.original.ingredient !== null);
+
+---
+
+<Layout
+    title="Pumpkin Cheeskace – Ingredients & Shopping List | bakeiq.com"
+    description="Pumpkin Cheesecake Ingredients & Shopping List"
+    keywords="pumpkin cheesecake, ingredients, shopping list"
+>
+    <div class="mb-10">
+        <h1 class="mb-4">{data.name}</h1>
+        <!-- name of each tab group should be unique -->
+        <div class="tabs tabs-lift">
+        <input type="radio" name="my_tabs_3" class="tab" aria-label="Ingredients" checked="checked" />
+        <div class="tab-content bg-base-100 border-base-300 p-6">
+            <ul class="list-none gap-2 flex flex-col">
+                {converted.map((c) => (
+                    <li class="flex items-center border-b border-base-300 pb-2 justify-between"> <span class="capitalize">{c.original.ingredient}</span> <span class="text-sm text-base-content font-bold border-2 border-primary rounded-md px-2 py-1">{c.converted?.value} {c.converted?.unit}</span></li>
+                ))}
+            </ul>
+        </div>
+
+        <input type="radio" name="my_tabs_3" class="tab" aria-label="Shopping List" />
+        <div class="tab-content bg-base-100 border-base-300 p-6">
+            <ul class="list-none gap-2 flex flex-col">
+                {converted.map((c) => (
+                    <li class="flex items-center border-b border-base-300 pb-2 capitalize"><input type="checkbox" class="checkbox checkbox-xl mr-2" /> {c.original.ingredient}</li>
+                ))}
+            </ul>
+        </div>
+        </div>
+    </div>
+</Layout>

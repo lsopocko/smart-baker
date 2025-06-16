@@ -293,3 +293,45 @@ export function extractIngredientLinesFromPage(): ScoredLine[] {
     // 🔁 Fallback: use text-based heuristics if no JSON found
     return extractIngredientsHeuristically(candidates);
 }
+
+function getRecipeNameFromHeadings(): string | null {
+    const h1 = document.querySelector('h1');
+    if (h1 && h1.textContent && h1.textContent.length < 100) return h1.textContent.trim();
+
+    const possibleHeadings = Array.from(document.querySelectorAll('h1, h2')).filter((el) => el.textContent && el.textContent.length < 100);
+
+    return possibleHeadings.length > 0 ? possibleHeadings[0].textContent!.trim() : null;
+}
+
+function getRecipeNameFromTitle(): string | null {
+    const title = document.title;
+    if (title) {
+        // Strip branding
+        return title.split('|')[0].split('-')[0].trim();
+    }
+    return null;
+}
+
+export const getRecipeNameFromLDJson = (): string | null => {
+    const scripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
+
+    for (const script of scripts) {
+        try {
+            const json = JSON.parse(script.textContent || '');
+            const recipe = Array.isArray(json)
+                ? json.find((j) => j['@type'] === 'Recipe')
+                : json['@type'] === 'Recipe'
+                  ? json
+                  : json['@graph']?.find((j: any) => j['@type'] === 'Recipe');
+            if (recipe?.name) return recipe.name;
+        } catch (e) {
+            // ignore malformed JSON
+        }
+    }
+
+    return null;
+};
+
+export const extractRecipeName = (): string => {
+    return getRecipeNameFromLDJson() || getRecipeNameFromHeadings() || getRecipeNameFromTitle() || 'Unknown Recipe';
+};

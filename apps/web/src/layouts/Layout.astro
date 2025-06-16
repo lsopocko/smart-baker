@@ -2,7 +2,6 @@
 import '../../src/styles/globals.css';
 import '@fontsource-variable/inter/wght.css';
 import interWoff2 from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
-import Footer from '../components/Footer.astro';
 
 interface Props {
     title: string;
@@ -49,10 +48,9 @@ const { title, keywords, description } = Astro.props;
     </head>
     <body class="antialiased bg-base-100 text-base-content">
         <div class="flex flex-col min-h-screen">
-            <div class="flex w-full mx-auto grow items-center">
+            <div class="flex w-full mx-auto grow">
                 <main class="grow px-4 md:px-6 lg:px-12 py-6 sm:py-12 max-w-5xl mx-auto"><slot /></main>
             </div>
-            <Footer />
         </div>
     </body>
     <script type="application/ld+json">

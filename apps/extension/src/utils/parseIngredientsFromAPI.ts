@@ -8,13 +8,13 @@ type ParsedIngredient = {
     comment: string | null;
 };
 
-export async function parseIngredientsFromAPI(lines: string[]): Promise<ParsedIngredient[]> {
+export async function parseIngredientsFromAPI(lines: string[], name?: string): Promise<{ id: string; results: ParsedIngredient[] }> {
     const res = await fetch('http://localhost:8001/parse', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ lines })
+        body: JSON.stringify({ lines, name })
     });
 
     if (!res.ok) {
@@ -22,5 +22,6 @@ export async function parseIngredientsFromAPI(lines: string[]): Promise<ParsedIn
     }
 
     const result = await res.json();
-    return result as ParsedIngredient[];
+
+    return result as { id: string; results: ParsedIngredient[] };
 }

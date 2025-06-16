@@ -1,22 +1,40 @@
 @import 'tailwindcss';
 
+@plugin "daisyui";
 
-@plugin "daisyui" {
-    themes: lemonade --defaul, dim --prefersdark;
-}
-
-
-@theme {
-    --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --color-primary: #f67280;
-    --color-primary-content: #101828;
-    --color-complementary: #355c7d;
-    --background-image-noise: linear-gradient(
-            to bottom,
-            color-mix(in oklab, var(--color-gray-950) 0%, transparent),
-            color-mix(in oklab, var(--color-gray-950) 100%, transparent)
-        ),
-        url('/images/noise.png');
+@plugin "daisyui/theme" {
+    name: 'retro';
+    default: true;
+    prefersdark: true;
+    color-scheme: 'light';
+    --color-base-100: #fff0d3;
+    --color-base-200: #fae8bd;
+    --color-base-300: #eeddb3;
+    --color-base-content: #5c4b45;
+    --color-primary: #3d2c29;
+    --color-primary-content: #fcf1d5;
+    --color-secondary: #e5cb9d;
+    --color-secondary-content: #5c4b45;
+    --color-accent: #b87b63;
+    --color-accent-content: #3d2c29;
+    --color-neutral: #6e6259;
+    --color-neutral-content: #e8dac8;
+    --color-info: #7ba7c9;
+    --color-info-content: #fff0d3;
+    --color-success: #7cb58c;
+    --color-success-content: #3d2c29;
+    --color-warning: #f0c46c;
+    --color-warning-content: #3d2c29;
+    --color-error: #c95a52;
+    --color-error-content: #fff0d3;
+    --radius-selector: 0.25rem;
+    --radius-field: 0.5rem;
+    --radius-box: 1rem;
+    --size-selector: 0.25rem;
+    --size-field: 0.25rem;
+    --border: 1px;
+    --depth: 0;
+    --noise: 0;
 }
 
 @layer base {
@@ -39,46 +57,5 @@
     :not(pre) > code {
         @apply px-1 py-0.5 font-mono rounded bg-gray-900 text-primary;
         font-size: 0.9em;
-    }
-}
-
-@layer components {
-    .markdown {
-        > * {
-            @apply my-6;
-        }
-
-        :where(h1, h2) {
-            @apply mt-12 mb-6;
-        }
-
-        > :first-child {
-            @apply mt-0;
-        }
-
-        > :last-child {
-            @apply mb-0;
-        }
-    }
-
-    .btn {
-        @apply inline-flex items-center justify-center gap-2 bg-primary text-primary-content cursor-pointer text-center font-semibold no-underline transition-colors;
-        padding: var(--btn-py, 0.875rem) var(--btn-px, 1.25rem);
-        font-size: var(--btn-font-size, 0.875rem);
-        border-radius: var(--btn-border-radius, 0.25rem);
-
-        &:hover {
-            @apply bg-primary/85;
-        }
-
-        &:disabled {
-            @apply text-gray-400 bg-gray-700;
-        }
-    }
-
-    .btn-lg {
-        --btn-font-size: 1.125rem;
-        --btn-px: 1.5rem;
-        --btn-py: 1.125rem;
     }
 }

@@ -1,10 +1,11 @@
-import { extractIngredientLinesFromPage } from './utils/extractIngredients';
+import { extractIngredientLinesFromPage, extractRecipeName } from './utils/extractIngredients';
 import { parseIngredientsFromAPI } from './utils/parseIngredientsFromAPI';
 import { convertToMetric, type ConversionResult } from './utils/convert';
 import css from './banner.css?inline';
 import { shouldShowBanner } from './utils/shouldShowBanner';
 import { detectLanguage } from './utils/detectLanguage';
 import { detectUnitSystem } from './utils/detectUnitSystem';
+import QRCode from 'qrcode';
 
 function html(strings: TemplateStringsArray, ...values: any[]): string {
     return strings.reduce((result, str, i) => result + str + (values[i] ?? ''), '');
@@ -102,20 +103,21 @@ const userPanSizes: PanSize[] = [
     }
 ];
 
-async function runSmartParsing() {
+async function runSmartParsing(state: BakeIQModule): Promise<{ id: string; converted: ConvertedIngredient }> {
     const scored = extractIngredientLinesFromPage();
 
-    console.log('scored', scored);
-
     if (scored.length === 0) {
-        return [];
+        return {
+            id: '',
+            converted: []
+        };
     }
 
     const topLines = scored.map((l) => l.line);
 
-    const parsed = await parseIngredientsFromAPI(topLines);
+    const parsed = await parseIngredientsFromAPI(topLines, state.getState().recipeName);
 
-    const converted: ConvertedIngredient = parsed.map((p) => {
+    const converted: ConvertedIngredient = parsed.results.map((p) => {
         if (p.quantity && p.unit && p.ingredient) {
             return {
                 input: p.input,
@@ -140,10 +142,16 @@ async function runSmartParsing() {
 
     chrome.runtime.sendMessage({
         type: 'SMART_BAKER_CONVERSIONS',
-        payload: converted
+        payload: {
+            id: parsed.id,
+            converted
+        }
     });
 
-    return converted;
+    return {
+        id: parsed.id,
+        converted
+    };
 }
 
 function injectBanner(state: BakeIQModule) {
@@ -172,6 +180,7 @@ function injectBanner(state: BakeIQModule) {
         </button>
         <img src="${imageUrl}" alt="Smart Baker" class="logo" />
         <div class="convert-for">
+            <span class="recipe-name">${state.getState().recipeName}</span>
             <span class="convert-for-label">Convert for:</span>
             <div class="show-recipe-btn">
                 <span id="pan-name">22×33 cm pan</span>
@@ -198,8 +207,11 @@ function injectBanner(state: BakeIQModule) {
                 </ul>
             </div>
             <div class="converted-ingredients-footer">
-                <button class="copy-all-btn" id="send-to-app">Send to App</button>
+                <button class="copy-all-btn" id="go-mobile">Go mobile</button>
                 <button class="copy-all-btn" id="copy-all">Copy all</button>
+            </div>
+            <div class="qr-code-container">
+                <img src="${state.getState().qrCode}" alt="QR Code" />
             </div>
         </div>
     `;
@@ -212,6 +224,16 @@ function injectBanner(state: BakeIQModule) {
     wrapper.querySelector('.show-recipe-btn')?.addEventListener('click', (event) => {
         event.stopPropagation();
         wrapper.querySelector('.converted-ingredients')?.classList.toggle('is-visible');
+    });
+
+    wrapper.querySelector('#go-mobile')?.addEventListener('click', async () => {
+        const qrCode = await QRCode.toDataURL(`http://192.168.50.250:4321/recipe/${state.getState().recipeId}`);
+        state.setState({
+            qrCode
+        });
+
+        wrapper.querySelector('.qr-code-container')?.classList.add('is-visible');
+        wrapper.querySelector('.qr-code-container img')?.setAttribute('src', qrCode);
     });
 
     wrapper.querySelectorAll('.dropdown-item')?.forEach((item) => {
@@ -276,19 +298,25 @@ const init = async (state: BakeIQModule) => {
         return;
     }
 
-    const converted = await runSmartParsing();
+    const recipeName = extractRecipeName();
 
     state.setState({
+        recipeName,
         detectedPan: detectedPanSize,
         activePan: userPanSizes[0],
         userSettings: {},
         scaleRatio: 1,
-        convertedIngredients: converted,
         siteUnitSystem: unitSystem,
-        siteLanguage: language
+        siteLanguage: language,
+        qrCode: ''
     });
 
-    console.log('state', state.getState());
+    const { id, converted } = await runSmartParsing(state);
+
+    state.setState({
+        convertedIngredients: converted,
+        recipeId: id
+    });
 
     if (converted.length === 0) {
         console.log('No converted ingredients');
@@ -306,6 +334,9 @@ type BakeIQState = {
     scaleRatio: number;
     siteUnitSystem: 'metric' | 'imperial' | 'mixed';
     siteLanguage: string;
+    qrCode?: string;
+    recipeId?: string;
+    recipeName?: string;
 };
 
 (() => {
@@ -317,7 +348,10 @@ type BakeIQState = {
             convertedIngredients: [],
             scaleRatio: 1,
             siteUnitSystem: 'metric',
-            siteLanguage: 'en'
+            siteLanguage: 'en',
+            qrCode: '',
+            recipeId: '',
+            recipeName: ''
         };
 
         function setState(partial: Partial<BakeIQState>): void {

@@ -122,6 +122,18 @@ body {
     color: #fcf1d5;
 }
 
+.sb-banner .qr-code-container {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 16px;
+}
+
+.sb-banner .qr-code-container.is-visible {
+    display: flex;
+}
+
 .sb-banner .show-recipe-btn .dropdown-arrow {
     background: #3d2c29;
     font-size: 12px;
@@ -207,6 +219,14 @@ body {
 .sb-banner .copy-all-btn:hover {
     background-color: #3d2c29;
     color: #fcf1d5;
+}
+
+.sb-banner .recipe-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #3d2c29;
+    text-align: center;
+    width: 100%;
 }
 
 .sb-banner .converted-ingredients {
