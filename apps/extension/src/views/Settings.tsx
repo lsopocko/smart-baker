@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { type BakeIQSettings, UnitSystem } from '../types';
+import { type BakeIQSettings, type PanSize, UnitSystem } from '../types';
 import { defaultSettings } from '../state/BakeIQ.module';
 
 const panShapes = [
@@ -15,9 +15,8 @@ const unitSystems = [
 export const Settings = ({ settings, onChange }: { settings: BakeIQSettings; onChange: (updatedSettings: Partial<BakeIQSettings>) => void }) => {
     const [isAddingCustomPan, setIsAddingCustomPan] = useState(false);
     const [panShape, setPanShape] = useState('rectangle');
-    const [panWidth, setPanWidth] = useState('22');
-    const [panHeight, setPanHeight] = useState('32');
-    const [panDiameter, setPanDiameter] = useState('22');
+    const [panWidth, setPanWidth] = useState('0');
+    const [panHeight, setPanHeight] = useState('0');
     const [defaultPanSize, setDefaultPanSize] = useState(settings.defaultPanSize?.name);
     const [unitSystem, setUnitSystem] = useState<UnitSystem>(settings.defaultUnit);
     const [autoConvert, setAutoConvert] = useState(settings.autoConvert);
@@ -27,11 +26,33 @@ export const Settings = ({ settings, onChange }: { settings: BakeIQSettings; onC
         const defaultPan = settings.panSizes.find((p) => p.name === defaultPanSize);
         onChange({
             defaultPanSize: defaultPan,
-            panSizes: [...defaultSettings.panSizes],
+            panSizes: settings.panSizes,
             defaultUnit: unitSystem,
             showBanner: showPopup,
             autoConvert: autoConvert
         });
+    };
+
+    const handleAddCustomPan = () => {
+        const newPan: PanSize = {
+            width: Number(panWidth),
+            height: Number(panHeight),
+            area: panShape === 'rectangle' ? Number(panWidth) * Number(panHeight) : Math.PI * Math.pow(Number(panWidth) / 2, 2),
+            unit: 'cm',
+            name: `${panWidth}×${panHeight} ${panShape === 'rectangle' ? 'sheet' : 'cake'} pan`
+        };
+
+        onChange({
+            defaultPanSize: newPan,
+            panSizes: [...settings.panSizes, newPan],
+            defaultUnit: unitSystem,
+            showBanner: showPopup,
+            autoConvert: autoConvert
+        });
+
+        setIsAddingCustomPan(false);
+        setPanWidth('0');
+        setPanHeight('0');
     };
 
     return (
@@ -67,13 +88,7 @@ export const Settings = ({ settings, onChange }: { settings: BakeIQSettings; onC
                     {panShape === 'round' && (
                         <>
                             <label className="floating-label">
-                                <input
-                                    type="text"
-                                    placeholder="Diameter"
-                                    className="input"
-                                    value={panDiameter}
-                                    onChange={(e) => setPanDiameter(e.target.value)}
-                                />
+                                <input type="text" placeholder="Diameter" className="input" value={panWidth} onChange={(e) => setPanWidth(e.target.value)} />
                                 <span>Diameter</span>
                             </label>
                         </>
@@ -83,7 +98,7 @@ export const Settings = ({ settings, onChange }: { settings: BakeIQSettings; onC
                         <button className="btn btn-sm" onClick={() => setIsAddingCustomPan(false)}>
                             Cancel
                         </button>
-                        <button className="btn btn-primary btn-sm" onClick={() => {}}>
+                        <button className="btn btn-primary btn-sm" onClick={handleAddCustomPan}>
                             Add pan size
                         </button>
                     </div>
