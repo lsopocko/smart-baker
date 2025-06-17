@@ -1,34 +1,38 @@
 import { useState } from 'react';
+import { type BakeIQSettings, UnitSystem } from '../types';
+import { defaultSettings } from '../state/BakeIQ.module';
 
 const panShapes = [
     { label: 'Rectangle (sheet pan)', value: 'rectangle' },
     { label: 'Round (cake pan)', value: 'round' }
 ];
 
-// All posible pan sizes in cm
-const panSizes = [
-    { label: '18×28 cm', value: '18x28' },
-    { label: '20×30 cm', value: '20x30' },
-    { label: '22×32 cm', value: '22x32' },
-    { label: '24×34 cm', value: '24x34' },
-    { label: '26×36 cm', value: '26x36' }
-];
-
 const unitSystems = [
-    { label: 'Metric', value: 'metric' },
-    { label: 'Imperial', value: 'imperial' }
+    { label: 'Metric', value: UnitSystem.Metric },
+    { label: 'Imperial', value: UnitSystem.Imperial }
 ];
 
-export const Settings = () => {
+export const Settings = ({ settings, onChange }: { settings: BakeIQSettings; onChange: (updatedSettings: Partial<BakeIQSettings>) => void }) => {
     const [isAddingCustomPan, setIsAddingCustomPan] = useState(false);
     const [panShape, setPanShape] = useState('rectangle');
     const [panWidth, setPanWidth] = useState('22');
     const [panHeight, setPanHeight] = useState('32');
     const [panDiameter, setPanDiameter] = useState('22');
-    const [defaultPanSize, setDefaultPanSize] = useState('22×32 cm');
-    const [unitSystem, setUnitSystem] = useState('metric');
+    const [defaultPanSize, setDefaultPanSize] = useState(settings.defaultPanSize?.name);
+    const [unitSystem, setUnitSystem] = useState<UnitSystem>(settings.defaultUnit);
+    const [autoConvert, setAutoConvert] = useState(settings.autoConvert);
+    const [showPopup, setShowPopup] = useState(settings.showBanner);
 
-    const [showPopup, setShowPopup] = useState(false);
+    const handleSave = () => {
+        const defaultPan = settings.panSizes.find((p) => p.name === defaultPanSize);
+        onChange({
+            defaultPanSize: defaultPan,
+            panSizes: [...defaultSettings.panSizes],
+            defaultUnit: unitSystem,
+            showBanner: showPopup,
+            autoConvert: autoConvert
+        });
+    };
 
     return (
         <>
@@ -94,9 +98,9 @@ export const Settings = () => {
                         <div className="join gap-2 items-center justify-between">
                             <label className="join-item floating-label w-full">
                                 <select value={defaultPanSize} onChange={(e) => setDefaultPanSize(e.target.value)} className="select">
-                                    {panSizes.map((size) => (
-                                        <option key={size.value} value={size.value}>
-                                            {size.label}
+                                    {settings.panSizes.map((size) => (
+                                        <option key={size.name} value={size.name}>
+                                            {size.name}
                                         </option>
                                     ))}
                                 </select>
@@ -112,7 +116,7 @@ export const Settings = () => {
                         </div>
 
                         <label className="floating-label">
-                            <select value={unitSystem} onChange={(e) => setUnitSystem(e.target.value)} className="select">
+                            <select value={unitSystem} onChange={(e) => setUnitSystem(e.target.value as UnitSystem)} className="select">
                                 {unitSystems.map((system) => (
                                     <option key={system.value} value={system.value}>
                                         {system.label}
@@ -126,9 +130,16 @@ export const Settings = () => {
                             <input type="checkbox" checked={showPopup} onChange={(e) => setShowPopup(e.target.checked)} className="checkbox" />
                             Show popup on supported websites
                         </label>
+
+                        <label className="label">
+                            <input type="checkbox" checked={autoConvert} onChange={(e) => setAutoConvert(e.target.checked)} className="checkbox" />
+                            Auto convert ingredients
+                        </label>
                     </fieldset>
 
-                    <button className="btn btn-primary btn-sm">Save</button>
+                    <button className="btn btn-primary btn-sm" onClick={handleSave}>
+                        Save
+                    </button>
                 </>
             )}
         </>

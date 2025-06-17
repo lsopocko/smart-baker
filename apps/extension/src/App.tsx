@@ -1,9 +1,34 @@
 import { Settings } from './views/Settings';
 import { ConvertedIngredients } from './views/ConvertedIngredients';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { type BakeIQSettings } from './types';
+import { defaultSettings } from './state/BakeIQ.module';
 
 function App() {
     const [view, setView] = useState<'settings' | 'convertedIngredients'>('convertedIngredients');
+    const [settings, setSettings] = useState<BakeIQSettings>(defaultSettings);
+
+    useEffect(() => {
+        chrome.storage.sync.get('bakeiq_settings', (result) => {
+            setSettings({ ...defaultSettings, ...result.bakeiq_settings });
+        });
+    }, []);
+
+    const handleChange = (updatedSettings: BakeIQSettings) => {
+        const updated = { ...settings, ...updatedSettings };
+        setSettings(updated);
+        chrome.storage.sync.set({ bakeiq_settings: updated });
+
+        console.log('updated', updated);
+
+        // Notify content script
+        // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        //     chrome.tabs.sendMessage(tabs[0].id!, {
+        //         type: 'BAKEIQ_SETTINGS_UPDATED',
+        //         payload: updated
+        //     });
+        // });
+    };
 
     const handleClose = () => {
         setView('settings');
@@ -35,7 +60,7 @@ function App() {
                 </svg>
             </button>
 
-            {view === 'settings' && <Settings />}
+            {view === 'settings' && <Settings settings={settings} onChange={handleChange} />}
             {view === 'convertedIngredients' && <ConvertedIngredients />}
         </div>
     );

@@ -1,4 +1,4 @@
-import type { Unit } from './convert';
+import type { Unit } from '@bakeiq/converter/types';
 
 type ParsedIngredient = {
     input: string;

@@ -38,6 +38,9 @@ importers:
 
   apps/extension:
     dependencies:
+      '@bakeiq/converter':
+        specifier: workspace:*
+        version: link:../../packages/converter
       '@types/chrome':
         specifier: ^0.0.326
         version: 0.0.326

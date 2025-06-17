@@ -1,30 +1,4 @@
-export type VolumeUnitImperial =
-    | 'cup'
-    | 'cups'
-    | 'tbsp'
-    | 'tsp'
-    | 'fl oz'
-    | 'teaspoon'
-    | 'teaspoons'
-    | 'tablespoon'
-    | 'tablespoons'
-    | 'pound'
-    | 'pounds'
-    | 'lb'
-    | 'lbs';
-
-export type WeightUnitMetric = 'g' | 'kg';
-export type VolumeUnitMetric = 'ml' | 'l';
-export type WeightUnitImperial = 'oz' | 'lb';
-export type WeightUnit = WeightUnitMetric | WeightUnitImperial;
-export type VolumeUnit = VolumeUnitImperial | VolumeUnitMetric;
-export type Unit = VolumeUnit | WeightUnit;
-
-export type ConversionResult = {
-    unit: 'ml' | 'g';
-    value: number;
-    ingredient?: string;
-};
+import type { VolumeUnitImperial, WeightUnitImperial, Unit, ConversionResult } from './types';
 
 const VOLUME_CONVERSIONS_TO_ML: Record<VolumeUnitImperial, number> = {
     cup: 240,
@@ -44,7 +18,11 @@ const VOLUME_CONVERSIONS_TO_ML: Record<VolumeUnitImperial, number> = {
 
 const WEIGHT_CONVERSIONS_TO_G: Record<WeightUnitImperial, number> = {
     oz: 28.35,
-    lb: 453.6
+    lb: 453.6,
+    lbs: 453.6,
+    ozs: 28.35,
+    'ozs.': 28.35,
+    ounce: 28.35
 };
 
 // Optional: ingredient-specific density overrides (grams per cup)
@@ -111,4 +89,8 @@ export function convertToMetric(amount: number, unit: Unit, ingredient?: string)
     }
 
     throw new Error(`Unknown unit: ${unit}`);
+}
+
+export function convertToCm(value: number, unit: 'cm' | 'inch'): number {
+    return unit === 'inch' ? value * 2.54 : value;
 }

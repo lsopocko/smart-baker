@@ -285,6 +285,7 @@ body {
     left: calc(50% - 63px);
     width: 126px;
     height: 74px;
+    z-index: -1;
 }
 
 .sb-banner .convert-for {

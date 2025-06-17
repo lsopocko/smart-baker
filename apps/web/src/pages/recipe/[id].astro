@@ -55,6 +55,9 @@ const converted: ConvertedIngredient = data.results.map((p: any) => {
         };
     }).filter((c) => c.original.ingredient !== null);
 
+// remove duplicates for shopping list
+const shoppingList = [...new Set(converted.filter((c) => c.original.ingredient !== null).map((c) => c.original.ingredient))];
+
 ---
 
 <Layout
@@ -78,8 +81,8 @@ const converted: ConvertedIngredient = data.results.map((p: any) => {
         <input type="radio" name="my_tabs_3" class="tab" aria-label="Shopping List" />
         <div class="tab-content bg-base-100 border-base-300 p-6">
             <ul class="list-none gap-2 flex flex-col">
-                {converted.map((c) => (
-                    <li class="flex items-center border-b border-base-300 pb-2 capitalize"><input type="checkbox" class="checkbox checkbox-xl mr-2" /> {c.original.ingredient}</li>
+                {shoppingList.map((item) => (
+                    <li class="flex items-center border-b border-base-300 pb-2 capitalize"><input type="checkbox" class="checkbox checkbox-xl mr-2" /> {item}</li>
                 ))}
             </ul>
         </div>
