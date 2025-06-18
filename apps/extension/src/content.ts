@@ -6,11 +6,14 @@ import { detectLanguage } from './utils/detectLanguage';
 import { detectUnitSystem } from './utils/detectUnitSystem';
 import { type ConvertedIngredient, UnitSystem, Language } from './types';
 import type { BakeIQModule, BakeIQState } from './state/BakeIQ.module';
-import { Banner, injectBanner } from './injectBanner';
+import { injectBanner } from './injectBanner';
 import { defaultSettings } from './state/BakeIQ.module';
 
 async function runSmartParsing(state: BakeIQModule): Promise<{ id: string; converted: ConvertedIngredient }> {
-    const scored = extractIngredientLinesFromPage();
+    console.log('state.getState().siteLanguage', state.getState().siteLanguage);
+    const scored = extractIngredientLinesFromPage(state.getState().siteLanguage);
+
+    console.log('scored', scored);
 
     if (scored.length === 0) {
         return {
@@ -21,7 +24,7 @@ async function runSmartParsing(state: BakeIQModule): Promise<{ id: string; conve
 
     const topLines = scored.map((l) => l.line);
 
-    const parsed = await parseIngredientsFromAPI(topLines, state.getState().recipeName);
+    const parsed = await parseIngredientsFromAPI(topLines, state.getState().recipeName, state.getState().siteLanguage);
 
     const converted: ConvertedIngredient = parsed.results.map((p) => {
         if (p.quantity && p.unit && p.ingredient) {

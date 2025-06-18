@@ -8,8 +8,12 @@ type ParsedIngredient = {
     comment: string | null;
 };
 
-export async function parseIngredientsFromAPI(lines: string[], name?: string): Promise<{ id: string; results: ParsedIngredient[] }> {
-    const res = await fetch('http://localhost:8001/parse', {
+export async function parseIngredientsFromAPI(
+    lines: string[],
+    name?: string,
+    language: 'en' | 'pl' = 'en'
+): Promise<{ id: string; results: ParsedIngredient[] }> {
+    const res = await fetch(`http://localhost:8001/parse/${language}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

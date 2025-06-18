@@ -5,6 +5,7 @@ from ingredient_parser import parse_ingredient
 from fastapi.middleware.cors import CORSMiddleware
 import re
 import uuid
+from bakeiq.parser_polish import parse_polish_ingredient
 
 UNITS = ["cup", "cups", "tbsp", "tablespoon", "tsp", "teaspoon", "oz", "ounce", "lb", "pound", "ml", "l", "g", "kg"]
 FOODS = ["flour", "sugar", "butter", "milk", "egg", "cheese", "salt", "oil", "chicken", "garlic", "onion"]
@@ -12,8 +13,9 @@ FOODS = ["flour", "sugar", "butter", "milk", "egg", "cheese", "salt", "oil", "ch
 # Store parsed ingredients keyed by UUID
 ingredient_db = {}
 
-class IngredientLines(BaseModel):
-    lines: list[str]
+class ParsedIngredients(BaseModel):
+    id: str
+    results: list[dict]
 
 def is_probable_ingredient(line: str) -> bool:
     if not re.search(r"\d", line): return False  # must have a number
@@ -43,7 +45,7 @@ class IngredientLines(BaseModel):
     lines: List[str]
     name: str
 
-@app.post("/parse")
+@app.post("/parse/en", response_model=ParsedIngredients)
 def parse_lines(data: IngredientLines):
     results = []
 
@@ -66,6 +68,18 @@ def parse_lines(data: IngredientLines):
     parsed_id = str(uuid.uuid4())
     ingredient_db[parsed_id] = {
         "name": data.name,
+        "results": results
+    }
+
+    return { "id": parsed_id, "results": results }
+
+@app.post("/parse/pl", response_model=ParsedIngredients)
+def parse_polish(lines: IngredientLines):
+    results = [parse_polish_ingredient(line) for line in lines.lines]
+
+    parsed_id = str(uuid.uuid4())
+    ingredient_db[parsed_id] = {
+        "name": lines.name,
         "results": results
     }
 

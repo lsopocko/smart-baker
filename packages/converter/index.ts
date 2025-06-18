@@ -34,6 +34,29 @@ const INGREDIENT_DENSITIES: Record<string, number> = {
     water: 240
 };
 
+export const MetricUnits = [
+  // Weight units
+  'mg', 'g', 'gram', 'grams',
+  'dag', 'dekagram', 'dekagrams',
+  'kg', 'kilogram', 'kilograms',
+  'tonne', 'tonnes',
+
+  // Volume units
+  'ml', 'milliliter', 'milliliters',
+  'cl', 'centiliter', 'centiliters',
+  'dl', 'deciliter', 'deciliters',
+  'l', 'liter', 'liters',
+  'hl', 'hectoliter', 'hectoliters',
+
+  // Polish volume units
+  'szklanki',
+  'szklanka',
+  'łyżeczki',
+  'łyżeczka',
+  'łyżki',
+  'łyżka',
+];
+
 export function normalizeIngredient(phrase: string): string | undefined {
     const lowered = phrase.toLowerCase().trim();
 
@@ -59,10 +82,19 @@ export function isImperialUnit(unit: Unit): boolean {
 }
 
 export function isMetricUnit(unit: Unit): boolean {
-    return unit === 'ml' || unit === 'g';
+    return MetricUnits.includes(unit);
 }
 
 export function convertToMetric(amount: number, unit: Unit, ingredient?: string): ConversionResult {
+    console.log('convertToMetric', isMetricUnit(unit), unit);
+    if (isMetricUnit(unit)) {
+        return {
+            value: Math.round(amount),
+            unit: unit,
+            ingredient
+        };
+    }
+
     if (unit in VOLUME_CONVERSIONS_TO_ML) {
         const ml = amount * VOLUME_CONVERSIONS_TO_ML[unit as VolumeUnitImperial];
 

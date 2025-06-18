@@ -1,62 +1,4 @@
-const UNITS = [
-    // volume
-    'teaspoon',
-    'teaspoons',
-    'tsp',
-    'tsps',
-    'tablespoon',
-    'tablespoons',
-    'tbsp',
-    'tbsps',
-    'cup',
-    'cups',
-    'fluid ounce',
-    'fluid ounces',
-    'fl oz',
-    'floz',
-    'pint',
-    'pints',
-    'pt',
-    'pts',
-    'quart',
-    'quarts',
-    'qt',
-    'qts',
-    'gallon',
-    'gallons',
-    'gal',
-    'gals',
-
-    // weight
-    'ounce',
-    'ounces',
-    'oz',
-    'pound',
-    'pounds',
-    'lb',
-    'lbs',
-    'gram',
-    'grams',
-    'g',
-    'kilogram',
-    'kilograms',
-    'kg',
-    'kgs',
-
-    // volume (metric)
-    'milliliter',
-    'milliliters',
-    'ml',
-    'mls',
-    'liter',
-    'liters',
-    'l',
-    'ls'
-];
-
-const FOODS = ['flour', 'sugar', 'butter', 'milk', 'egg', 'salt', 'oil', 'cheese', 'water', 'onion', 'garlic', 'chocolate', 'cream', 'chicken', 'eggs'];
-
-const COOKING_VERBS = ['bake', 'stir', 'cook', 'grill', 'heat', 'fry', 'simmer', 'roast', 'mix', 'add', 'cream', 'whip', 'place', 'combine', 'pour'];
+import { getUnits, getFoods, getCookingVerbs } from '../lang';
 
 type ScoredLine = {
     line: string;
@@ -118,10 +60,14 @@ function boostByBlockDensity(lines: ScoredLine[]): ScoredLine[] {
     return clustered;
 }
 
-function getLineScore(line: string): number {
+function getLineScore(line: string, language: 'en' | 'pl'): number {
     const lower = line.toLowerCase();
     const cleaned = lower.replace(/[.,:;!?]+/g, '');
     let score = 0;
+
+    const UNITS = getUnits(language);
+    const FOODS = getFoods(language);
+    const COOKING_VERBS = getCookingVerbs(language);
 
     if (/\d/.test(cleaned) || FRACTIONS.test(cleaned)) score += 1;
     if (UNITS.some((unit) => new RegExp(`\\b${unit}\\b`).test(cleaned))) score += 1;
@@ -140,10 +86,14 @@ function getLineScore(line: string): number {
     return score;
 }
 
-export function extractIngredientsHeuristically(lines: string[]): ScoredLine[] {
+export function extractIngredientsHeuristically(lines: string[], language: 'en' | 'pl'): ScoredLine[] {
     const mappedLines = lines.map((line, index) => ({ line: line.trim(), index })).filter((l) => l.line.length >= 5 && l.line.length <= 200);
 
     const scored: ScoredLine[] = [];
+
+    const UNITS = getUnits(language);
+    const FOODS = getFoods(language);
+    const COOKING_VERBS = getCookingVerbs(language);
 
     for (const { line, index } of mappedLines) {
         const lower = line.toLowerCase();
@@ -155,6 +105,8 @@ export function extractIngredientsHeuristically(lines: string[]): ScoredLine[] {
         if (FOODS.some((food) => cleaned.includes(food))) score += 0.5;
         if (!COOKING_VERBS.some((verb) => cleaned.includes(verb))) score += 0.5;
         if (startsWithNumber(cleaned)) score += 1; // boost if number is first
+        // reduce score if no letters
+        if (!/[a-zA-Z]/.test(cleaned)) score -= 1;
         const wordCount = cleaned.trim().split(/\s+/).length;
         if (wordCount > 10) score -= 0.5;
         if (wordCount > 15) score -= 1;
@@ -165,10 +117,20 @@ export function extractIngredientsHeuristically(lines: string[]): ScoredLine[] {
         scored.push({ line, score, index });
     }
 
+    console.log('scored before clustering', scored);
+
     // Now apply block-based boost
     const clustered = boostByBlockDensity(scored);
-    const filtered = clustered.filter((l) => l.score >= 2);
+
+    console.log('clustered', clustered);
+
+    const filtered = clustered.filter((l) => l.score >= 3);
+
+    console.log('filtered', filtered);
+
     const final = truncateByIndexGap(filtered);
+
+    console.log('final', final);
 
     return final;
 }
@@ -200,7 +162,7 @@ function findLCA(elements: HTMLElement[]): HTMLElement | null {
     return lca;
 }
 
-export const extractIngredientLinesFromDOM = (): string[] => {
+export const extractIngredientLinesFromDOM = (language: 'en' | 'pl'): string[] => {
     const lines: { text: string; node: HTMLElement; score: number }[] = [];
 
     const garbageTags = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'SVG', 'IFRAME', 'HEAD', 'META', 'LINK']);
@@ -227,14 +189,14 @@ export const extractIngredientLinesFromDOM = (): string[] => {
                 .filter(Boolean);
 
             for (const part of parts) {
-                if (getLineScore(part) >= 2) {
-                    lines.push({ text: part, node: el, score: getLineScore(part) });
+                if (getLineScore(part, language) >= 2) {
+                    lines.push({ text: part, node: el, score: getLineScore(part, language) });
                 }
             }
         } else {
             const text = el.textContent.trim();
-            if (getLineScore(text) >= 2) {
-                lines.push({ text, node: el, score: getLineScore(text) });
+            if (getLineScore(text, language) >= 2) {
+                lines.push({ text, node: el, score: getLineScore(text, language) });
             }
         }
     }
@@ -262,10 +224,12 @@ export const extractIngredientLinesFromDOM = (): string[] => {
         }
     }
 
+    console.log('extracted', extracted);
+
     return extracted;
 };
 
-export function extractIngredientLinesFromPage(): ScoredLine[] {
+export function extractIngredientLinesFromPage(language: 'en' | 'pl'): ScoredLine[] {
     const scripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
 
     for (const script of scripts) {
@@ -288,10 +252,10 @@ export function extractIngredientLinesFromPage(): ScoredLine[] {
         }
     }
 
-    const candidates = extractIngredientLinesFromDOM();
+    const candidates = extractIngredientLinesFromDOM(language);
 
     // 🔁 Fallback: use text-based heuristics if no JSON found
-    return extractIngredientsHeuristically(candidates);
+    return extractIngredientsHeuristically(candidates, language);
 }
 
 function getRecipeNameFromHeadings(): string | null {
