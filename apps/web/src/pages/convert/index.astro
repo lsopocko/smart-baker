@@ -1,0 +1,17 @@
+---
+import Converter from '../../components/Converter/Converter';
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+    title="Ingredients converter | bakeiq.com"
+    description="Ingredients converter"
+    keywords="ingredients, converter, metric, imperial"
+>
+    <div class="mb-10">
+        <h1 class="mb-4">Get ingriediens & convert</h1>
+        <div class="p8">
+            <Converter client:idle />
+        </div>
+    </div>
+</Layout>
