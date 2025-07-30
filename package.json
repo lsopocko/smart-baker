@@ -8,6 +8,7 @@
   "scripts": {
     "dev:web": "pnpm --filter web... dev",
     "dev:extension": "pnpm --filter extension... dev",
+    "dev:nlp": "cd apps/services/nlp-parser && uvicorn main:app --reload --port 8001",
     "lint": "eslint . --ext .js,.ts,.tsx",
     "format": "prettier --write ."
   },

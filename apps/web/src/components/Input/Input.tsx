@@ -1,21 +1,23 @@
+import { useState, type ChangeEventHandler } from 'react';
+
 const Input = ({ label, onClick, disabled = false }) => {
-    const handleClick = (event) => {
-        if (disabled) {
-            event.preventDefault();
-            return;
-        }
-        console.log('Button clicked:', label);
-        console.log('click', onClick);
+    const [value, setValue] = useState('');
+    const handleChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+        console.log('change inut', event);
+        setValue(event.target.value);
     };
 
     return (
-        <button
-            onClick={handleClick}
-            disabled={disabled}
-            className={`px-4 py-2 rounded-md text-white ${disabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
-        >
-            {label}
-        </button>
+        <input
+            type="text"
+            className="input w-full"
+            onChange={handleChange}
+            placeholder="Recipe url"
+            tabIndex={0}
+            onFocus={(event) => {
+                event.target.select();
+            }}
+        ></input>
     );
 };
 
