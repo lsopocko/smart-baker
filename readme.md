@@ -7,6 +7,14 @@
 > ⚠️ **This project is a work in progress.**  
 > Please **use it with caution** and **always double-check** the original and converted ingredient list to ensure all values make sense and nothing is missing. We're actively improving the parser and UI.
 
+## 🧠 How It Works
+
+1. Injects smart banner into recipe pages  
+2. Parses ingredients and converts units  
+3. Syncs your shopping list to your phone via QR
+
+![Flow](./assets/how-it-works.gif)
+
 ## Features
 
 - 🧠 AI-powered ingredient parser (English only)
