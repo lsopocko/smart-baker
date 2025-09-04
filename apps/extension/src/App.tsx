@@ -1,12 +1,20 @@
 import { Settings } from './views/Settings';
 import { ConvertedIngredients } from './views/ConvertedIngredients';
 import { useState, useEffect } from 'react';
-import { type BakeIQSettings } from './types';
+import { type BakeIQSettings, type ConvertedIngredient } from './types';
 import { defaultSettings } from './state/BakeIQ.module';
+
+type ConvertedIngredientsMessage = { type: 'CONVERTED_INGREDIENTS'; payload: { id: string; converted: ConvertedIngredient } };
+
+function isConvertedIngredientsMessage(msg: { type: string }): msg is ConvertedIngredientsMessage {
+    return msg.type === 'CONVERTED_INGREDIENTS';
+}
 
 function App() {
     const [view, setView] = useState<'settings' | 'convertedIngredients'>('convertedIngredients');
     const [settings, setSettings] = useState<BakeIQSettings>(defaultSettings);
+    const [convertedIngriedients, setConvertedIngriedients] = useState<ConvertedIngredient>([]);
+    const [conversionId, setConversionId] = useState<string>('');
 
     useEffect(() => {
         chrome.storage.sync.get('bakeiq_settings', (result) => {
@@ -14,7 +22,26 @@ function App() {
         });
     }, []);
 
-    const handleChange = (updatedSettings: BakeIQSettings) => {
+    useEffect(() => {
+        console.log('app opened');
+        chrome.storage.sync.get('bakeiq_settings', (result) => {
+            setSettings({ ...defaultSettings, ...result.bakeiq_settings });
+        });
+
+        chrome.runtime.onMessage.addListener((msg) => {
+            console.log('message from bg script', msg);
+            if (isConvertedIngredientsMessage(msg)) {
+                const { converted, id } = msg.payload;
+
+                setConvertedIngriedients(converted);
+                setConversionId(id);
+            }
+        });
+
+        chrome.runtime.sendMessage({ type: 'GET_CONVERSIONS' });
+    }, []);
+
+    const handleChange = (updatedSettings: Partial<BakeIQSettings>) => {
         const updated = { ...settings, ...updatedSettings };
         setSettings(updated);
         chrome.storage.sync.set({ bakeiq_settings: updated });
@@ -22,12 +49,14 @@ function App() {
         console.log('updated', updated);
 
         // Notify content script
-        // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        //     chrome.tabs.sendMessage(tabs[0].id!, {
-        //         type: 'BAKEIQ_SETTINGS_UPDATED',
-        //         payload: updated
-        //     });
-        // });
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id!, {
+                type: 'BAKEIQ_SETTINGS_UPDATED',
+                payload: updated
+            });
+        });
+
+        setView('convertedIngredients');
     };
 
     const handleClose = () => {
@@ -61,7 +90,7 @@ function App() {
             </button>
 
             {view === 'settings' && <Settings settings={settings} onChange={handleChange} />}
-            {view === 'convertedIngredients' && <ConvertedIngredients />}
+            {view === 'convertedIngredients' && <ConvertedIngredients convertedIngredients={convertedIngriedients} />}
         </div>
     );
 }

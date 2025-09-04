@@ -49,14 +49,6 @@ async function runSmartParsing(state: BakeIQModule): Promise<{ id: string; conve
         };
     });
 
-    chrome.runtime.sendMessage({
-        type: 'SMART_BAKER_CONVERSIONS',
-        payload: {
-            id: parsed.id,
-            converted
-        }
-    });
-
     return {
         id: parsed.id,
         converted
@@ -116,6 +108,14 @@ const init = async (state: BakeIQModule) => {
     const banner = injectBanner(state);
 
     console.log('banner', banner);
+
+    chrome.runtime.sendMessage({
+        type: 'SMART_BAKER_CONVERSIONS',
+        payload: {
+            id,
+            converted
+        }
+    });
 };
 
 (() => {
