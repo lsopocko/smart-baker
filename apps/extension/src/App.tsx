@@ -60,7 +60,7 @@ function App() {
     };
 
     const handleClose = () => {
-        setView('settings');
+        window.close();
     };
 
     const handleSettings = () => {
@@ -68,7 +68,7 @@ function App() {
     };
 
     return (
-        <div className="p-4 min-w-[330px] font-sans bg-base-200 text-base-content shadow-lg flex flex-col items-center justify-center gap-2 relative">
+        <div className="p-4 min-w-[330px] font-sans bg-base-100 text-base-content shadow-lg flex flex-col items-center justify-center gap-2 relative">
             <img src={chrome.runtime.getURL('images/logo-2.png')} alt="Smart Baker" width={57.5} height={89.5} />
             {/* Close button */}
             <button className="btn btn-ghost btn-circle absolute top-2 right-2" onClick={handleClose}>
