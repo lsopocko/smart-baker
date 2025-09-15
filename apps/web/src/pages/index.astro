@@ -7,29 +7,19 @@ import Layout from '../layouts/Layout.astro';
     description="Pumpkin Cheesecake Ingredients & Shopping List"
     keywords="pumpkin cheesecake, ingredients, shopping list"
 >
-    <div class="mb-10">
-        <h1 class="mb-4">Pumpkin Cheesecake</h1>
-        <!-- name of each tab group should be unique -->
-        <div class="tabs tabs-lift">
-        <input type="radio" name="my_tabs_3" class="tab" aria-label="Ingredients" checked="checked" />
-        <div class="tab-content bg-base-100 border-base-300 p-6">
-            <ul class="list-none gap-2 flex flex-col">
-                <li class="flex items-center border-b border-base-300 pb-2 justify-between"> Pumpkin <span class="text-sm text-base-content font-bold border-2 border-primary rounded-md px-2 py-1">2 cups</span></li>
-                <li class="flex items-center border-b border-base-300 pb-2 justify-between"> Sugar <span class="text-sm text-base-content font-bold border-2 border-primary rounded-md px-2 py-1">1 cup</span></li>
-                <li class="flex items-center border-b border-base-300 pb-2 justify-between"> Flour <span class="text-sm text-base-content font-bold border-2 border-primary rounded-md px-2 py-1">1 cup</span></li>
-                <li class="flex items-center pb-2 justify-between"> Milk <span class="text-sm text-base-content font-bold border-2 border-primary rounded-md px-2 py-1">1 cup</span></li> 
+    <div class="flex flex-row gap-12 justify-between">
+        <div class="max-w-xl pt-4">
+            <h1 class="mb-7 font-medium">Smarter Baking Starts Here</h1>
+            <p class="text-xl font-medium mb-4 mr-20">Turn any recipe into perfectly scaled ingredients for your pan, in your units – instantly.</p>
+            <ul class="list-disc list-inside text-xl font-medium">
+                <li>Works on any recipe site</li>
+                <li>Converts units automatically</li>
+                <li>Adjusts to your pan size</li>
+                <li>No account required</li>
             </ul>
         </div>
-
-        <input type="radio" name="my_tabs_3" class="tab" aria-label="Shopping List" />
-        <div class="tab-content bg-base-100 border-base-300 p-6">
-            <ul class="list-none gap-2 flex flex-col">
-                <li class="flex items-center border-b border-base-300 pb-2"><input type="checkbox" class="checkbox checkbox-xl mr-2" /> Pumpkin</li>
-                <li class="flex items-center border-b border-base-300 pb-2"><input type="checkbox" class="checkbox checkbox-xl mr-2" /> Sugar</li>
-                <li class="flex items-center border-b border-base-300 pb-2"><input type="checkbox" class="checkbox checkbox-xl mr-2" /> Flour</li>
-                <li class="flex items-center pb-2"><input type="checkbox" class="checkbox checkbox-xl mr-2" /> Milk</li> 
-            </ul>
-        </div>
+        <div>
+            <img src="/assets/browser.png" />
         </div>
     </div>
 </Layout>

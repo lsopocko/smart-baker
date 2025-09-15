@@ -7,9 +7,9 @@ export const ConvertedIngredients: FC<{ convertedIngredients?: ConvertedIngredie
             {convertedIngredients
                 ?.filter((c) => c.original?.ingredient)
                 .map((ingredient) => (
-                    <div className="flex capitalize font-light text-sm flex-1 items-center justify-between">
-                        <span>{ingredient.converted?.ingredient}</span>
-                        <span className="btn btn-outline">
+                    <div className="flex  font-light text-sm flex-1 items-center justify-between">
+                        <span className="capitalize">{ingredient.converted?.ingredient}</span>
+                        <span className="bordr pl-2 pr-2 pt-1 pb-1 text-primary text-[11px] rounded-lg border-2 border-primary">
                             {ingredient.converted?.value} {ingredient.converted?.unit}
                         </span>
                     </div>

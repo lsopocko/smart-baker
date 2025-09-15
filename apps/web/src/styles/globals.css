@@ -38,6 +38,9 @@
 }
 
 @layer base {
+    body {
+        /* font-family: Futura; */
+    }
     h1 {
         @apply text-4xl font-bold tracking-tight sm:text-5xl;
     }
